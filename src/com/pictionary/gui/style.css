@@ -1,0 +1,15 @@
+#AnchorPane {
+    -fx-background-color : linear-gradient(to left, rgba(76,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%);
+}
+
+#btnNewGame {
+    -fx-background-color : linear-gradient(to right, rgba(76,58,180,1) 0%, rgba(29,169,253,1) 50%, rgba(88,252,69,1) 100%);
+}
+
+#btnLoadImage {
+    -fx-background-color : linear-gradient(to right, rgba(76,58,180,1) 0%, rgba(88,252,69,1) 50%, rgba(29,169,253,1) 100%);
+}
+
+#btnExitGame {
+    -fx-background-color : linear-gradient(to right, rgba(180,58,58,1) 0%, rgba(252,179,69,1) 50%, rgba(253,123,29,1) 100%);
+}

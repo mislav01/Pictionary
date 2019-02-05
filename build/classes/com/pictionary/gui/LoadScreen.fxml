@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import com.jfoenix.controls.*?>
+
+<AnchorPane id="AnchorPane" fx:id="parent" prefHeight="211.0" prefWidth="340.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pictionary.gui.LoadScreenController">
+    <children>
+       <Label fx:id="label" layoutX="126" layoutY="120" minHeight="16" minWidth="69" />
+      <JFXButton id="btnNewGame" fx:id="btnNewGame" buttonType="RAISED" layoutX="211.0" layoutY="14.0" onAction="#onBtnNewGameAction" prefHeight="50.0" prefWidth="100.0" ripplerFill="#d7d6c7" stylesheets="@style.css" text="New Game" textOverrun="LEADING_WORD_ELLIPSIS" />
+      <JFXButton id="btnLoadImage" buttonType="RAISED" layoutX="211.0" layoutY="75.0" onAction="#onBtnLoadAction" prefHeight="50.0" prefWidth="100.0" ripplerFill="#d7d6c7" stylesheets="@style.css" text="Load Image" textOverrun="LEADING_WORD_ELLIPSIS" />
+      <JFXButton id="btnExitGame" buttonType="RAISED" layoutX="14.0" layoutY="152.0" onAction="#onBtnExitGameAction" prefHeight="34.0" prefWidth="69.0" ripplerFill="#d7d6c7" stylesheets="@style.css" text="Exit" textOverrun="LEADING_WORD_ELLIPSIS" />
+      <JFXTextField fx:id="txtName" focusColor="#dad2d2" layoutX="14.0" layoutY="27.0" onAction="#onBtnNewGameAction" prefHeight="25.0" prefWidth="173.0" promptText="Username..." />
+    </children>
+</AnchorPane>
