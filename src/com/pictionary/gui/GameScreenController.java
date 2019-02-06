@@ -7,7 +7,6 @@ import com.jfoenix.controls.JFXSlider;
 import com.pictionary.model.Player;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,19 +35,18 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class GameScreenController implements Initializable {
 
@@ -58,12 +56,7 @@ public class GameScreenController implements Initializable {
     private TimerThread timerThread;
     private Document doc;
     //XML
-    private Element buttons;
-    private Element drawing;
-    private Element mousePressed;
-    private Element mouseDragged;
-    private Element chat;
-    private int xmlOrderAttr = 0;
+    private Element rootElement;
 
     @FXML
     private JFXButton btnSaveImage;
@@ -114,23 +107,9 @@ public class GameScreenController implements Initializable {
                 if (tfMessage.getText().equals("!pause")) {
                     client.sendMsg("pause//");
                     tfMessage.clear();
-                    //XML
-                    Element pause = doc.createElement("pause");
-                    Attr attrOrder = doc.createAttribute("order");
-                    attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-                    pause.setAttributeNode(attrOrder);
-                    pause.appendChild(doc.createTextNode("!pause"));
-                    chat.appendChild(pause);
                 } else if (tfMessage.getText().equals("!play")) {
                     client.sendMsg("unpause//");
                     tfMessage.clear();
-                    //XML
-                    Element play = doc.createElement("play");
-                    Attr attrOrder = doc.createAttribute("order");
-                    attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-                    play.setAttributeNode(attrOrder);
-                    play.appendChild(doc.createTextNode("!play"));
-                    chat.appendChild(play);
                 } else if (tfMessage.getText().equals("!replay")) {
                     replayFromXml();
                     tfMessage.clear();
@@ -139,11 +118,8 @@ public class GameScreenController implements Initializable {
 
                     //XML
                     Element gw = doc.createElement("gw");
-                    Attr attrOrder = doc.createAttribute("order");
-                    attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-                    gw.setAttributeNode(attrOrder);
-                    gw.appendChild(doc.createTextNode("gw//" + tfMessage.getText().substring(1).toLowerCase()));
-                    chat.appendChild(gw);
+                    gw.appendChild(doc.createTextNode("msg//You guessed word: " + tfMessage.getText().substring(1).toLowerCase()));
+                    rootElement.appendChild(gw);
 
                     tfMessage.clear();
                 }
@@ -153,11 +129,8 @@ public class GameScreenController implements Initializable {
 
                 //XML
                 Element msg = doc.createElement("msg");
-                Attr attrOrder = doc.createAttribute("order");
-                attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-                msg.setAttributeNode(attrOrder);
                 msg.appendChild(doc.createTextNode("msg//" + client.getName() + ": " + tfMessage.getText()));
-                chat.appendChild(msg);
+                rootElement.appendChild(msg);
 
                 tfMessage.clear();
 
@@ -172,8 +145,6 @@ public class GameScreenController implements Initializable {
         try {
             client.sendMsg("ready");
             btnReady.setDisable(true);
-            //XML
-            addButtonToXml(btnReady);
         } catch (IOException ex) {
             Logger.getLogger(GameScreenController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -213,11 +184,8 @@ public class GameScreenController implements Initializable {
 
         //XML
         Element prsd = doc.createElement("prsd");
-        Attr attrOrder = doc.createAttribute("order");
-        attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-        prsd.setAttributeNode(attrOrder);
         prsd.appendChild(doc.createTextNode(msg));
-        mousePressed.appendChild(prsd);
+        rootElement.appendChild(prsd);
 
         try {
             client.sendMsg(msg);
@@ -245,11 +213,8 @@ public class GameScreenController implements Initializable {
 
         //XML
         Element drgd = doc.createElement("drgd");
-        Attr attrOrder = doc.createAttribute("order");
-        attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-        drgd.setAttributeNode(attrOrder);
         drgd.appendChild(doc.createTextNode(msg));
-        mouseDragged.appendChild(drgd);
+        rootElement.appendChild(drgd);
 
         try {
             client.sendMsg(msg);
@@ -406,33 +371,11 @@ public class GameScreenController implements Initializable {
             doc = dBuilder.newDocument();
 
             //Create root element
-            Element rootElement
+            rootElement
                     = doc.createElement("Pictionary");
             doc.appendChild(rootElement);
 
-            //Create buttons element
-            buttons
-                    = doc.createElement("Buttons");
-            rootElement.appendChild(buttons);
-            //Create drawing element
-            drawing
-                    = doc.createElement("Drawing");
-            rootElement.appendChild(drawing);
-
-            mousePressed
-                    = doc.createElement("mousePressed");
-            drawing.appendChild(mousePressed);
-
-            mouseDragged
-                    = doc.createElement("mouseDragged");
-            drawing.appendChild(mouseDragged);
-
-            //Create chat element
-            chat
-                    = doc.createElement("Chat");
-            rootElement.appendChild(chat);
-
-        } catch (Exception e) {
+        } catch (ParserConfigurationException | DOMException e) {
             Logger.getLogger(GameScreenController.class.getName()).log(Level.SEVERE, null, e);
         }
     }
@@ -455,79 +398,39 @@ public class GameScreenController implements Initializable {
 
     private void addButtonToXml(JFXButton btn) {
         Element button = doc.createElement("button");
-        Attr attrOrder = doc.createAttribute("order");
-        attrOrder.setValue(Integer.toString(xmlOrderAttr++));
-        button.setAttributeNode(attrOrder);
         button.appendChild(doc.createTextNode(btn.getId()));
-        buttons.appendChild(button);
+        rootElement.appendChild(button);
     }
 
     private void replayFromXml() {
-        try {
-            XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-            XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(new FileInputStream("Pictionary-" + client.getName() + ".xml"));
+        Thread replayThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    Document document = db.parse(new File("Pictionary-" + client.getName() + ".xml"));
+                    Node rootNode = document.getDocumentElement();
 
-            while (xmlEventReader.hasNext()) {
-                XMLEvent xmlEvent = xmlEventReader.nextEvent();
+                    NodeList childNodes = rootNode.getChildNodes();
 
-                if (xmlEvent.isStartElement()) {
-                    StartElement startElement = xmlEvent.asStartElement();
-                    if (startElement.getName().getLocalPart().equals("button")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String buttonId = xmlEvent.asCharacters().getData();
-                        System.out.println(buttonId);
-                    } else if (startElement.getName().getLocalPart().equals("mousePressed")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String msg = "";
-                        if (!xmlEvent.asCharacters().getData().isEmpty()) {
-                            msg = xmlEvent.asCharacters().getData();
+                    for (int i = 0; i < childNodes.getLength(); i++) {
+                        Thread.sleep(3);
+                        Node childNode = childNodes.item(i);
+                        if (childNode.getChildNodes().item(0).getNodeValue().equals("btnClear")) {
+                            onBtnClearAction(new ActionEvent());
+                        } else {
+                            sendMessage(childNode.getChildNodes().item(0).getNodeValue());
                         }
-                        System.out.println(msg);
-                    } else if (startElement.getName().getLocalPart().equals("mouseDragged")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String msg = "";
-                        if (!xmlEvent.asCharacters().getData().isEmpty()) {
-                            msg = xmlEvent.asCharacters().getData();
-                        }
-                        System.out.println(msg);
-                    } else if (startElement.getName().getLocalPart().equals("play")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String msg = "";
-                        if (!xmlEvent.asCharacters().getData().isEmpty()) {
-                            msg = xmlEvent.asCharacters().getData();
-                        }
-                        System.out.println(msg);
-                    } else if (startElement.getName().getLocalPart().equals("pause")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String msg = "";
-                        if (!xmlEvent.asCharacters().getData().isEmpty()) {
-                            msg = xmlEvent.asCharacters().getData();
-                        }
-                        System.out.println(msg);
-                    } else if (startElement.getName().getLocalPart().equals("gw")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String msg = "";
-                        if (!xmlEvent.asCharacters().getData().isEmpty()) {
-                            msg = xmlEvent.asCharacters().getData();
-                        }
-                        System.out.println(msg);
-                    } else if (startElement.getName().getLocalPart().equals("msg")) {
-                        xmlEvent = xmlEventReader.nextEvent();
-                        String msg = "";
-                        if (!xmlEvent.asCharacters().getData().isEmpty()) {
-                            msg = xmlEvent.asCharacters().getData();
-                        }
-                        System.out.println(msg);
                     }
+                } catch (FileNotFoundException | ParserConfigurationException ex) {
+                    Logger.getLogger(GameScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SAXException | IOException | InterruptedException ex) {
+                    Logger.getLogger(GameScreenController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        } catch (XMLStreamException | FileNotFoundException ex) {
-            Logger.getLogger(GameScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        });
+        
+        replayThread.start();
     }
-
-    private void parseXml(String fileName) {
-
-    }
-
 }

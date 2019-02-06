@@ -1,1 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><Pictionary><Buttons><button order="0">btnReady</button></Buttons><Drawing><mousePressed/><mouseDragged/></Drawing><Chat><gw order="1">gw//church</gw><gw order="2">gw//flag</gw><gw order="3">gw//bucket</gw></Chat></Pictionary>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><Pictionary><gw>msg//You guessed word: flower</gw><button>btnClear</button><gw>msg//You guessed word: pirate</gw><gw>msg//You guessed word: lamp</gw></Pictionary>
